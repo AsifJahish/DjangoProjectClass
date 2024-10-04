@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ profile_user.username }}'s Profile{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <img src="{{ profile_user.profile.profile_picture.url }}" class="card-img-top" alt="{{ profile_user.username }}'s profile picture">
+            <div class="card-body">
+                <h5 class="card-title">{{ profile_user.username }}</h5>
+                <p class="card-text">{{ profile_user.profile.bio }}</p>
+                {% if user.is_authenticated and user != profile_user %}
+                    {% if user in profile_user.followers.all %}
+                        <form action="{% url 'unfollow_user' profile_user.username %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-secondary">Unfollow</button>
+                        </form>
+                    {% else %}
+                        <form action="{% url 'follow_user' profile_user.username %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary">Follow</button>
+                        </form>
+                    {% endif %}
+                {% endif %}
+            </div>
+            <div class="card-footer">
+                <small class="text-muted">Followers: {{ profile_user.followers.count }} | Following: {{ profile_user.following.count }}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <h2 class="mb-4">{{ profile_user.username }}'s Posts</h2>
+        {% for post in profile_user.post_set.all %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="card-title">{{ post.title }}</h3>
+                    <p class="card-text">{{ post.content|truncatewords:50 }}</p>
+                    <p class="card-text"><small class="text-muted">Posted on {{ post.created_at|date:"F d, Y" }}</small></p>
+                    <a href="{% url 'post_detail' post.pk %}" class="btn btn-primary">Read More</a>
+                </div>
+            </div>
+        {% empty %}
+            <p>No posts yet.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
